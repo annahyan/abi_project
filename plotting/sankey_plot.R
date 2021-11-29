@@ -5,8 +5,13 @@ library(hrbrthemes)
 library(circlize)
 library(readxl)
 library(here)
+library(networkD3)
 
 all_data <- read_excel("Plotting", "COSMIC_1001_Cell_lines_mutational_signatures.xlsx", 
+                       sheet = "COSMIC CellLines Signatures")[c(-1, -3)]
+
+
+all_data <- read_excel(here("plotting", "COSMIC_1001_Cell_lines_mutational_signatures.xlsx"), 
                        sheet = "COSMIC CellLines Signatures")[c(-1, -3)]
 
 cancers = unique(all_data$`Cancer Type used in SigProfiler`)
@@ -16,11 +21,10 @@ colnames(sankey_data) = colnames(all_data)[-1]
 
 for(i in cancers) {
   ind = which(all_data$`Cancer Type used in SigProfiler` == i)
-  sankey_data[i, ] = colMeans(all_data[ind,-1]) 
+  df <- all_data[ind,]
+  sankey_data[i,] = colSums(df[,-1] > 0)
 }
 
-
-data = sankey_data
 data = as.data.frame(sankey_data)
 
 # I need a long format
@@ -47,6 +51,7 @@ sankeyNetwork(Links = data_long, Nodes = nodes,
               Source = "IDsource", Target = "IDtarget",
               Value = "value", NodeID = "name", 
               sinksRight=FALSE, colourScale=ColourScal, nodeWidth=40, fontSize=13, nodePadding=20)
+
 
 
 
